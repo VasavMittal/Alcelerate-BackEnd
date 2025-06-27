@@ -3,21 +3,35 @@ const { google } = require("googleapis");
 const Aicelerate = require("../models/Aicelerate");
 require("dotenv").config()
 
-const SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"];
+const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
-const auth = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI
-);
+/* ------------------------------------------------------------------ */
+/* 1️⃣  AUTHENTICATION – SERVICE ACCOUNT                               */
+/* ------------------------------------------------------------------ */
+function getAuthClient() {
+  if (process.env.GOOGLE_KEY_FILE) {
+    const keyPath = process.env.GOOGLE_KEY_FILE;
+    const auth = new google.auth.GoogleAuth({
+      keyFile: keyPath,
+      scopes: SCOPES,
+    });
+    return auth;
+  }
 
-// You should persist and load tokens securely
-auth.setCredentials({
-  access_token: process.env.GOOGLE_ACCESS_TOKEN,
-  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-});
+  const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+  const jwtClient = new google.auth.JWT(
+    process.env.GOOGLE_CLIENT_EMAIL,
+    null,
+    privateKey,
+    SCOPES,
+    process.env.GCAL_IMPERSONATE_USER || undefined
+  );
+  return jwtClient;
+}
 
-const calendar = google.calendar({ version: "v3", auth });
+const authClient = getAuthClient();
+console.log(authClient);
+const calendar = google.calendar({ version: 'v3', auth: authClient });
 
 async function fetchCalendarEvents() {
   try {
