@@ -19,7 +19,7 @@ async function fetchHubSpotLeads() {
           Authorization: `Bearer ${HUBSPOT_API_KEY}`
         },
         params: {
-          properties: "email,firstname,lastname,lead_status,hs_whatsapp_phone_number",
+          properties: "email,firstname,lastname,relationship_status,hs_whatsapp_phone_number",
           limit: 100,
           ...(after && { after })
         }
@@ -57,7 +57,7 @@ async function syncHubSpotLeadsWithDB() {
     const firstname = lead.properties?.firstname || "";
     const lastname = lead.properties?.lastname || "";
     const fullName = `${firstname} ${lastname}`.trim();
-    const hubspotStatus = lead.properties?.lead_status || "new_lead";
+    const hubspotStatus = lead.properties?.relationship_status || "new_lead";
     const contact = lead.properties?.hs_whatsapp_phone_number || "";
 
     if (!email) {
