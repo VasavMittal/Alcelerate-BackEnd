@@ -5,6 +5,7 @@ const hubspotSync = require("../integrations/hubspotSync");
 const calendarSync = require("../integrations/googleCalenderSync");
 const leadProcessor = require("../services/leadProcessor");
 const sendTemplate = require("../services/sendTemplate");
+const noShowSync = require("../integrations/noShowSync");
 
 async function runAutomationTasks() {
   try {
@@ -18,6 +19,8 @@ async function runAutomationTasks() {
 
     // Step 3: Run lead processing
     await leadProcessor.handleRemindersAndTriggers();
+
+    await noShowSync.syncNoShows();
 
     console.log("[Automation] All tasks completed.");
   } catch (err) {
