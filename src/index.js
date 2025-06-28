@@ -10,7 +10,7 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => {
   console.log("✅ MongoDB connected");
-  startCronJobs(); // ⏱️ Start the cron after DB connects
+  //startCronJobs(); // ⏱️ Start the cron after DB connects
 })
 .catch((err) => {
   console.error("❌ MongoDB connection error:", err);
