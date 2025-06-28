@@ -10,5 +10,11 @@ function startCronJobs() {
 
   console.log("✅ Cron job scheduled: Every 1 minute");
 }
+async function triggerManualJob(payload) {
+  // This gets triggered via webhook
+  console.log("🚨 Manual job triggered with:", payload);
 
-module.exports = { startCronJobs };
+  // Do your DB logic / processing here
+}
+
+module.exports = { startCronJobs, triggerManualJob };
