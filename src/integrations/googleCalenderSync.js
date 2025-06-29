@@ -12,24 +12,45 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 /* 1️⃣  AUTHENTICATION – SERVICE ACCOUNT                               */
 /* ------------------------------------------------------------------ */
 function getAuthClient() {
+  /*** 1) Prefer GOOGLE_KEY_FILE if present ********************************/
   if (process.env.GOOGLE_KEY_FILE) {
-    const keyPath = process.env.GOOGLE_KEY_FILE;
-    const auth = new google.auth.GoogleAuth({
-      keyFile: keyPath,
+    let key;
+    try {
+      // .env stores one long JSON string → parse it to an object
+      key = JSON.parse(process.env.GOOGLE_KEY_FILE);
+    } catch (err) {
+      throw new Error('GOOGLE_KEY_FILE env var is not valid JSON');
+    }
+
+    const impersonate = process.env.GCAL_IMPERSONATE_USER || undefined;
+
+    // ---- A. With impersonation (domain‑wide delegation) ----
+    if (impersonate) {
+      return new google.auth.JWT(
+        key.client_email,            // service‑account email
+        null,                        // keyFile, not needed
+        key.private_key,             // raw private key
+        SCOPES,
+        impersonate                  // subject / user to act on behalf of
+      );
+    }
+
+    // ---- B. Normal service‑account use ----
+    return new google.auth.GoogleAuth({
+      credentials: key,             // JSON parsed above
       scopes: SCOPES,
     });
-    return auth;
   }
 
+  /*** 2) Fallback: legacy env vars GOOGLE_PRIVATE_KEY / GOOGLE_CLIENT_EMAIL */
   const privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
-  const jwtClient = new google.auth.JWT(
+  return new google.auth.JWT(
     process.env.GOOGLE_CLIENT_EMAIL,
     null,
     privateKey,
     SCOPES,
     process.env.GCAL_IMPERSONATE_USER || undefined
   );
-  return jwtClient;
 }
 
 const authClient = getAuthClient();
