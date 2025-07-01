@@ -30,6 +30,9 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 const VERIFY_TOKEN = 'aicelerate_token'; 
 
+app.get("/health", (req, res) => {
+  console.log('health check');
+});
 // 🔗 Webhook Endpoint (e.g., POST /webhook)
 app.get('/whatsapp/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
