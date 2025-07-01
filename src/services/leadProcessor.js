@@ -35,7 +35,7 @@ async function handleRemindersAndTriggers() {
   }
 
   // 3. Not Booked Follow-ups (24/48/72 hrs)
-  const stages = [24, 48, 72];
+  const stages = [24, 72];
   for (let i = 0; i < stages.length; i++) {
     const hours = stages[i];
     const leads = await Aicelerate.find({

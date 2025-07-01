@@ -117,6 +117,7 @@ async function syncGoogleCalendarWithDB() {
         $set: {
           'meetingDetails.meetingBooked': true,
           'meetingDetails.meetingTime': meetingTime,
+          "meetingDetails.noShowTime":  meetingTime,
           'meetingDetails.meetingLink': hangoutLink,
           'meetingDetails.googleCalendarEventId': googleCalendarEventId,
           'meetingDetails.hubspotStatus': 'meeting_booked',
@@ -140,7 +141,6 @@ async function syncGoogleCalendarWithDB() {
     const updates = {
       'meetingDetails.meetingBooked': false,
       'meetingDetails.noBookReminderStage': 0,
-      'meetingDetails.noBookReminderTime': now,
       'meetingDetails.hubspotStatus': 'not_booked',
     };
 

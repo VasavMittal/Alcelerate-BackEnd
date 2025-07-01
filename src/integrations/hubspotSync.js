@@ -53,6 +53,7 @@ async function syncHubSpotLeadsWithDB() {
   let skippedCount = 0;
 
   for (const lead of leads) {
+    console.log(lead);
     const email = lead.properties?.email;
     const firstname = lead.properties?.firstname || "";
     const lastname = lead.properties?.lastname || "";
@@ -73,6 +74,7 @@ async function syncHubSpotLeadsWithDB() {
           $set: {
             name: fullName,
             contact: contact,
+            'meetingDetails.noBookReminderTime': new Date(),
             "meetingDetails.hubspotStatus": hubspotStatus
           }
         },

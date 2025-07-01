@@ -24,8 +24,7 @@ async function syncNoShows() {
 
   const noShowCandidates = await Aicelerate.find({
     "meetingDetails.meetingBooked": true,
-    "meetingDetails.hubspotStatus": "meeting_booked",
-    "meetingDetails.meetingTime":   { $lte: cutoff }
+    "meetingDetails.hubspotStatus": "noshow",
   });
 
   if (!noShowCandidates.length) {
@@ -44,9 +43,8 @@ async function syncNoShows() {
       { _id: lead._id },
       {
         $set: {
-          "meetingDetails.hubspotStatus":      "noshow",
+          "meetingDetails.hubspotStatus": "noshow",
           "meetingDetails.noShowReminderStage": 0,
-          "meetingDetails.noShowTime":         now
         }
       }
     );
