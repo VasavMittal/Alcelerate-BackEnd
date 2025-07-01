@@ -4,9 +4,10 @@ const Aicelerate = require("../models/Aicelerate");
 const sendTemplate = require("./sendTemplate");
 
 async function handleRemindersAndTriggers() {
-  const now = new Date();
+  const now = Date.now();
   const oneHour = 60 * 60 * 1000;
   const twentyFourHours = 24 * oneHour;
+  const twentyFiveHours = 25 * oneHour;
   const fortyEightHours = 48 * oneHour;
   const seventyTwoHours = 72 * oneHour;
 
@@ -14,7 +15,7 @@ async function handleRemindersAndTriggers() {
   const reminder24hr = await Aicelerate.find({
     "meetingDetails.meetingBooked": true,
     "meetingDetails.reminder24hrSent": false,
-    "meetingDetails.meetingTime": { $gte: new Date(now - twentyFourHours), $lte: new Date(now + twentyFourHours) }
+    "meetingDetails.meetingTime": {$lt: new Date(now + twentyFiveHours) }
   });
 
   for (const lead of reminder24hr) {
@@ -26,7 +27,7 @@ async function handleRemindersAndTriggers() {
   const reminder1hr = await Aicelerate.find({
     "meetingDetails.meetingBooked": true,
     "meetingDetails.reminder1hrSent": false,
-    "meetingDetails.meetingTime": { $gte: new Date(now - oneHour), $lte: new Date(now + oneHour) }
+    "meetingDetails.meetingTime": { $lt: new Date(now + oneHour) }
   });
 
   for (const lead of reminder1hr) {
@@ -42,7 +43,7 @@ async function handleRemindersAndTriggers() {
       "meetingDetails.meetingBooked": false,
       "meetingDetails.hubspotStatus": "not_booked",
       "meetingDetails.noBookReminderStage": i,
-      "meetingDetails.noBookReminderTime": { $lte: new Date(now - hours * oneHour) }
+      "meetingDetails.noBookReminderTime": { $lt: new Date(now - hours * oneHour) }
     });
     for (const lead of leads) {
       await sendTemplate.sendNoBookReminder(lead, i + 1);
@@ -56,7 +57,7 @@ async function handleRemindersAndTriggers() {
     const leads = await Aicelerate.find({
       "meetingDetails.hubspotStatus": "noshow",
       "meetingDetails.noShowReminderStage": stage - 1,
-      "meetingDetails.noShowTime": { $lte: new Date(now - twentyFourHours) }
+      "meetingDetails.noShowTime": { $lt: new Date(now - twentyFourHours) }
     });
     for (const lead of leads) {
       await sendTemplate.sendNoShowReminder(lead, stage);

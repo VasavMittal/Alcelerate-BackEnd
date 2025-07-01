@@ -118,7 +118,7 @@ async function syncGoogleCalendarWithDB() {
     const res = await Aicelerate.updateOne(
       {
         email: guestEmail,
-        'meetingDetails.hubspotStatus': { $in: ['new_lead', 'noshow', 'not_booked'] }
+        'meetingDetails.hubspotStatus': { $in: ['new_lead', 'not_booked'] }
       },
       {
         $set: {
@@ -126,6 +126,8 @@ async function syncGoogleCalendarWithDB() {
           'meetingDetails.meetingTime'   : meetingTime,
           'meetingDetails.noShowTime'    : meetingTime,
           'meetingDetails.meetingLink'   : hangoutLink,
+          "meetingDetails.reminder24hrSent": false,
+          "meetingDetails.reminder1hrSent": false,
           'meetingDetails.googleCalendarEventId': gcalEventId,
           'meetingDetails.hubspotStatus' : 'meeting_booked',
         },
