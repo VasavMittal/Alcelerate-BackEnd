@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 const path = require('path');
 const Aicelerate = require('../models/Aicelerate');
 const { updateLeadStatusByEmail } = require('../services/hubspotService');
+const sendTemplate = require("../services/sendTemplate");
 require('dotenv').config();
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
@@ -97,55 +98,75 @@ async function syncGoogleCalendarWithDB() {
   const events = await fetchCalendarEvents();
   const calendarEmailsSet = new Set();
 
+  /* --------- 1.  Handle every booked event | meeting_booked --------- */
   for (const event of events) {
     const attendees = event.attendees || [];
-    const guest = attendees.find(
-      a => a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL
+    const guest = attendees.find(a =>
+      a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL
     );
-    if (!guest || !guest.email) continue;
+    console.log(guest?.email);
+    if (!guest?.email) continue;
 
-    const guestEmail = guest.email.toLowerCase();
+    const guestEmail  = guest.email.toLowerCase();
     calendarEmailsSet.add(guestEmail);
 
     const meetingTime = event.start?.dateTime || null;
     const hangoutLink = event.hangoutLink || '';
-    const googleCalendarEventId = event.id || '';
+    const gcalEventId = event.id || '';
 
-    await Aicelerate.updateOne(
-      { email: guestEmail },
+    /* Update ONLY if current hubspotStatus ∈ { new_lead, noshow, not_booked } */
+    const res = await Aicelerate.updateOne(
+      {
+        email: guestEmail,
+        'meetingDetails.hubspotStatus': { $in: ['new_lead', 'noshow', 'not_booked'] }
+      },
       {
         $set: {
-          'meetingDetails.meetingBooked': true,
-          'meetingDetails.meetingTime': meetingTime,
-          "meetingDetails.noShowTime":  meetingTime,
-          'meetingDetails.meetingLink': hangoutLink,
-          'meetingDetails.googleCalendarEventId': googleCalendarEventId,
-          'meetingDetails.hubspotStatus': 'meeting_booked',
+          'meetingDetails.meetingBooked' : true,
+          'meetingDetails.meetingTime'   : meetingTime,
+          'meetingDetails.noShowTime'    : meetingTime,
+          'meetingDetails.meetingLink'   : hangoutLink,
+          'meetingDetails.googleCalendarEventId': gcalEventId,
+          'meetingDetails.hubspotStatus' : 'meeting_booked',
         },
       }
     );
 
-    await updateLeadStatusByEmail(guestEmail, 'meeting_booked');
+    /* Call HubSpot only if we actually modified a doc */
+    if (res.modifiedCount) {
+      await updateLeadStatusByEmail(guestEmail, 'meeting_booked');
+      const lead = await Aicelerate.findOne(
+        { email: guestEmail}                                  
+      );
+      await sendTemplate.sendMeetingBooked(lead);
+    }
   }
 
   console.log(`✅ Synced ${calendarEmailsSet.size} contacts with calendar.`);
 
-  // Now update leads without any event
-  const now = new Date();
-  const allLeads = await Aicelerate.find({});
+  /* --------- 2.  Flip new_lead ➜ not_booked if still no event -------- */
+  const leads = await Aicelerate.find(
+    { 'meetingDetails.hubspotStatus': 'new_lead' }, // only new_lead matters
+    { email: 1 }                                    // fetch just email field
+  );
 
-  for (const lead of allLeads) {
-    const email = lead.email?.toLowerCase();
-    if (!email || calendarEmailsSet.has(email)) continue;
+  for (const { email } of leads) {
+    if (!email || calendarEmailsSet.has(email.toLowerCase())) continue;
 
-    const updates = {
-      'meetingDetails.meetingBooked': false,
-      'meetingDetails.noBookReminderStage': 0,
-      'meetingDetails.hubspotStatus': 'not_booked',
-    };
+    const res = await Aicelerate.updateOne(
+      { email },
+      { $set: { 'meetingDetails.hubspotStatus': 'not_booked',
+                'meetingDetails.meetingBooked': false,
+                'meetingDetails.noBookReminderStage': 0 } }
+    );
 
-    await Aicelerate.updateOne({ _id: lead._id }, { $set: updates });
-    await updateLeadStatusByEmail(email, 'not_booked');
+    if (res.modifiedCount) {
+      await updateLeadStatusByEmail(email, 'not_booked');
+      const lead = await Aicelerate.findOne(
+        { email: email}                                  
+      );
+      await sendTemplate.sendBookingReminder(lead);
+    }
   }
 
   console.log('✅ Google Calendar sync complete.');

@@ -1,21 +1,5 @@
-/**
- * Mark “no-show” contacts in both MongoDB and HubSpot.
- *
- *  CRITERIA
- *  ──────────────────────────────────────────────────────────────
- *   1. meetingBooked          == true
- *   2. hubspotStatus (Mongo)  == "meeting_booked"
- *   3. meetingTime            < NOW – 1 hour
- *
- *  ACTION
- *   • MongoDB  → hubspotStatus = "noshow",
- *                noShowTime    = now,
- *                noShowReminderStage = 0
- *   • HubSpot  → relationship_status   = "noshow"
- */
-
 const Aicelerate = require("../models/Aicelerate");
-const { updateLeadStatusByEmail } = require("../services/hubspotService");
+const sendTemplate = require("../services/sendTemplate");
 
 async function syncNoShows() {
   const ONE_HOUR = 60 * 60 * 1000;
@@ -39,18 +23,21 @@ async function syncNoShows() {
     if (!email) continue;                                   // Skip records with no email
 
     // 1. MongoDB update
-    await Aicelerate.updateOne(
-      { _id: lead._id },
+    const res = await Aicelerate.updateOne(
+      {
+        _id: lead._id,
+        "meetingDetails.noShowReminderStage": { $exists: false }   // ← extra guard
+      },
       {
         $set: {
-          "meetingDetails.hubspotStatus": "noshow",
-          "meetingDetails.noShowReminderStage": 0,
+          "meetingDetails.noShowReminderStage": 1
         }
       }
-    );
+    );    
+    if (res.modifiedCount) {
+      await sendTemplate.sendNoShowReminder(lead, 1);
+    }
 
-    // 2. HubSpot update
-    await updateLeadStatusByEmail(email, "noshow");
   }
 
   console.log("✅ No-show sync complete.");

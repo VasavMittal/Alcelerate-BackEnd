@@ -48,6 +48,28 @@ app.get('/whatsapp/webhook', (req, res) => {
 
 // POST route to handle incoming messages and statuses
 app.post('/whatsapp/webhook', (req, res) => {
-  console.log('Webhook Received: ', JSON.stringify(req.body, null, 2));
-  res.sendStatus(200); // Acknowledge receipt to Meta
+  try {
+    console.log('Webhook Received: ', JSON.stringify(req.body, null, 2));
+    const entry = req.body?.entry?.[0];
+    const change = entry?.changes?.[0];
+    const value = change?.value;
+    const contact = value?.contacts?.[0];
+    const message = value?.messages?.[0];
+
+    if (!contact || !message) {
+      return res.status(400).send('Missing contact or message');
+    }
+
+    const Name = contact.profile?.name || 'Unknown';
+    const WhatsappNumber = contact.wa_id || '';
+    const Time = new Date(parseInt(message.timestamp) * 1000).toLocaleString(); // Convert UNIX to readable
+    const Message = message.text?.body || 'No message';
+
+    const payload = { Name, WhatsappNumber, Time, Message };
+    triggerManualJob(payload);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('❌ Error in webhook handler:', err.message);
+    res.sendStatus(500);
+  }
 });

@@ -1,6 +1,10 @@
 // cron/cronJobs.js
 const cron = require("node-cron");
 const { runAutomationTasks } = require("../leadAutomationIndex");
+const fetch = require('node-fetch');
+require('dotenv').config();
+
+const url = process.env.GOOGLE_SHEET_URL;
 
 function startCronJobs() {
   cron.schedule("* * * * *", async () => {
@@ -11,10 +15,17 @@ function startCronJobs() {
   console.log("✅ Cron job scheduled: Every 1 minute");
 }
 async function triggerManualJob(payload) {
-  // This gets triggered via webhook
-  console.log("🚨 Manual job triggered with:", payload);
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
-  // Do your DB logic / processing here
+    const data = await res.json();
+    console.log("✅ Response:", data);
+  
 }
 
 module.exports = { startCronJobs, triggerManualJob };

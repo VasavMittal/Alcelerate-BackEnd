@@ -40,6 +40,7 @@ async function handleRemindersAndTriggers() {
     const hours = stages[i];
     const leads = await Aicelerate.find({
       "meetingDetails.meetingBooked": false,
+      "meetingDetails.hubspotStatus": "not_booked",
       "meetingDetails.noBookReminderStage": i,
       "meetingDetails.noBookReminderTime": { $lte: new Date(now - hours * oneHour) }
     });
@@ -50,13 +51,12 @@ async function handleRemindersAndTriggers() {
   }
 
   // 4. No-show Reminders (first & second)
-  const noShowStages = [1, 2];
+  const noShowStages = [2];
   for (let stage of noShowStages) {
-    const timeDiff = stage * twentyFourHours;
     const leads = await Aicelerate.find({
       "meetingDetails.hubspotStatus": "noshow",
       "meetingDetails.noShowReminderStage": stage - 1,
-      "meetingDetails.noShowTime": { $lte: new Date(now - timeDiff) }
+      "meetingDetails.noShowTime": { $lte: new Date(now - twentyFourHours) }
     });
     for (const lead of leads) {
       await sendTemplate.sendNoShowReminder(lead, stage);

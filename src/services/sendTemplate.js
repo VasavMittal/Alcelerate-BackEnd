@@ -1,7 +1,7 @@
 // services/sendTemplate.js
 const fetch = require('node-fetch');
 const templates = require("../models/MailTemplates");
-const transporter = require('../config/email');
+const transporter = require('../utils/smtpMailer');
 
 async function sendEmail(to, subject, body) {
     const mailOptions = {
@@ -59,14 +59,14 @@ function buildPayload(lead) {
 }
 
 function buildWhatsAppPayload(to, templateName, payload) {
-  if(templateName === 'meeting_reminder_24hr') {  
+  if(templateName === 'meeting_reminder_24hr' || templateName === 'meeting_booked') {  
     return {
       messaging_product: 'whatsapp',
       to: to,
       type: 'template',
       template: {
         name: templateName,
-        language: { code: 'en_US' },
+        language: { code: 'en' },
         components: [
           {
             type: 'body',
@@ -88,7 +88,7 @@ function buildWhatsAppPayload(to, templateName, payload) {
       type: 'template',
       template: {
         name: templateName,
-        language: { code: 'en_US' },
+        language: { code: 'en' },
         components: [
           {
             type: 'body',
@@ -102,14 +102,14 @@ function buildWhatsAppPayload(to, templateName, payload) {
       }
     };
   }
-  if(templateName === 'meeting_not_attend_reminder_1' || templateName === 'meeting_not_attend_reminder_2' || templateName === 'reminder_to_book_1' || templateName === 'reminder_to_book_2') {
+  if(templateName === 'meeting_not_attend_reminder_1' || templateName === 'meeting_not_attend_reminder_2' || templateName === 'reminder_to_book_1' || templateName === 'reminder_to_book_2' || templateName === 'meeting_not_booked') {
     return {
       messaging_product: 'whatsapp',
       to: to,
       type: 'template',
       template: {
         name: templateName,
-        language: { code: 'en_US' },
+        language: { code: 'en' },
         components: [
           {
             type: 'body',
@@ -122,6 +122,19 @@ function buildWhatsAppPayload(to, templateName, payload) {
       }
     };
   }
+}
+
+async function sendMeetingBooked(lead) {
+  const payload = buildPayload(lead);
+  const email = templates.meetingBookedEmail(payload);
+  const whatsAppPayload = {
+    name: payload.name,
+    date: payload.date,
+    time: payload.time,
+    url: payload.meetingUrl,
+  }
+  await sendEmail(lead.email, email.subject, email.body);
+  await sendWhatsApp(lead.name, 'meeting_booked', whatsAppPayload);
 }
 
 async function sendMeetingReminder24hr(lead) {
@@ -150,6 +163,19 @@ async function sendMeetingReminder1hr(lead) {
   await sendWhatsApp(lead.name, 'meeting_reminder_one_hour_before', whatsAppPayload);
 }
 
+async function sendBookingReminder(lead) {
+  const payload = buildPayload(lead);
+  const email = templates.meetingNotBookedEmail(payload);
+  const whatsAppPayload = {
+    name: payload.name,
+    date: payload.date,
+    time: payload.time,
+    url: payload.rescheduleLink,
+  }
+  await sendEmail(lead.email, email.subject, email.body);
+  await sendWhatsApp(lead.name, `meeting_not_booked`, whatsAppPayload);
+}
+
 async function sendNoBookReminder(lead, stage) {
   const payload = buildPayload(lead);
   const email = templates[`noBookingReminder${stage}Email`](payload);
@@ -157,7 +183,7 @@ async function sendNoBookReminder(lead, stage) {
     name: payload.name,
     date: payload.date,
     time: payload.time,
-    url: payload.meetingUrl,
+    url: payload.rescheduleLink,
   }
   await sendEmail(lead.email, email.subject, email.body);
   await sendWhatsApp(lead.name, `reminder_to_book_${stage}`, whatsAppPayload);
@@ -170,7 +196,7 @@ async function sendNoShowReminder(lead, stage) {
     name: payload.name,
     date: payload.date,
     time: payload.time,
-    url: payload.meetingUrl,
+    url: payload.rescheduleLink,
   }
   await sendEmail(lead.email, email.subject, email.body);
   await sendWhatsApp(lead.name, `meeting_not_attend_reminder_${stage}`, whatsAppPayload);
@@ -181,4 +207,6 @@ module.exports = {
   sendMeetingReminder1hr,
   sendNoBookReminder,
   sendNoShowReminder,
+  sendMeetingBooked,
+  sendBookingReminder,
 };

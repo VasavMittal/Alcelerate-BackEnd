@@ -41,58 +41,68 @@ async function fetchHubSpotLeads() {
 }
 
 // ⬇️ Sync all leads to MongoDB
+// integrations/hubspotSync.js
 async function syncHubSpotLeadsWithDB() {
   const leads = await fetchHubSpotLeads();
-
   if (!leads.length) {
     console.log("⚠️ No leads found from HubSpot.");
     return;
   }
 
-  let savedCount = 0;
-  let skippedCount = 0;
+  let inserted = 0, updated = 0, skipped = 0, emailNotFound = 0;
 
   for (const lead of leads) {
-    console.log(lead);
     const email = lead.properties?.email;
-    const firstname = lead.properties?.firstname || "";
-    const lastname = lead.properties?.lastname || "";
-    const fullName = `${firstname} ${lastname}`.trim();
-    const hubspotStatus = lead.properties?.relationship_status || "new_lead";
-    const contact = lead.properties?.hs_whatsapp_phone_number || "";
+    if (!email) { emailNotFound++; continue; }
 
-    if (!email) {
-      skippedCount++;
-      console.warn("⚠️ Skipped lead with no email:", lead.id);
-      continue;
-    }
+    const hubspotStatus   = lead.properties?.relationship_status || "new_lead";
+    const fullName        = `${lead.properties?.firstname || ""} ${lead.properties?.lastname || ""}`.trim();
+    const contact         = lead.properties?.hs_whatsapp_phone_number || "";
+    const hubspotId       = lead.id || lead.properties?.hs_object_id;
+    const hubspotCreated  = new Date(lead.properties?.createdate || lead.createdAt);
 
     try {
-      await Aicelerate.updateOne(
-        { email },
+      const res = await Aicelerate.updateOne(
+        { email },                                       // 🔍 find by email only
         {
-          $set: {
+          $set: {                                        // 📝 always try to set status
+            'meetingDetails.hubspotStatus': hubspotStatus
+          },
+          $setOnInsert: {                                // ➕ only on very first insert
             name: fullName,
-            contact: contact,
-            'meetingDetails.noBookReminderTime': new Date(),
-            "meetingDetails.hubspotStatus": hubspotStatus
+            contact,
+            hubspotId,
+            'meetingDetails.noBookReminderTime': hubspotCreated,
+            createdAt: hubspotCreated
           }
         },
         { upsert: true }
       );
 
-      savedCount++;
-      console.log(`✅ Saved/Updated: ${email} → Status: ${hubspotStatus}, Contact: ${contact}`);
+      if (res.upsertedCount) {
+        inserted++;
+        console.log(`➕ Inserted new lead: ${email}`);
+      } else if (res.modifiedCount) {
+        updated++;
+        console.log(`🔄 Status updated for: ${email} → ${hubspotStatus}`);
+      } else {
+        skipped++;
+        // Stored status already equals hubspotStatus
+      }
     } catch (err) {
-      console.error(`❌ Failed to save lead: ${email}`, err.message);
+      skipped++;
+      console.error(`❌ DB error for ${email}:`, err.message);
     }
   }
 
   console.log("🎯 HubSpot Sync Summary:");
-  console.log(`   → Total leads processed: ${leads.length}`);
-  console.log(`   → Leads saved/updated: ${savedCount}`);
-  console.log(`   → Leads skipped (no email): ${skippedCount}`);
+  console.log(`   → Processed : ${leads.length}`);
+  console.log(`   → Inserted  : ${inserted}`);
+  console.log(`   → Updated   : ${updated}`);
+  console.log(`   → Skipped   : ${skipped}`);
+  console.log(`   → Email Not Found: ${emailNotFound}`);
 }
+
 
 module.exports = {
   syncHubSpotLeadsWithDB
