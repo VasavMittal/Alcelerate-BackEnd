@@ -1,7 +1,6 @@
 // cron/cronJobs.js
 const cron = require("node-cron");
 const { runAutomationTasks } = require("../leadAutomationIndex");
-const fetch = require('node-fetch');
 require('dotenv').config();
 
 const url = process.env.GOOGLE_SHEET_URL;
