@@ -50,7 +50,6 @@ app.get('/whatsapp/webhook', (req, res) => {
 // POST route to handle incoming messages and statuses
 app.post('/whatsapp/webhook', (req, res) => {
   try {
-    console.log('Webhook Received: ', JSON.stringify(req.body, null, 2));
     const entry = req.body?.entry?.[0];
     const change = entry?.changes?.[0];
     const value = change?.value;
