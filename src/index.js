@@ -15,7 +15,7 @@ mongoose.connect(process.env.MONGO_URI)
   console.log("✅ MongoDB connected");
 
   // ⏱️ Start the cron after DB connects
-  //startCronJobs();
+  startCronJobs();
 
   // 🌐 Start API server
   app.listen(PORT, () => {
