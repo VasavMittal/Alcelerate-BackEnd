@@ -114,11 +114,11 @@ async function syncGoogleCalendarWithDB() {
     const hangoutLink = event.hangoutLink || '';
     const gcalEventId = event.id || '';
 
-    /* Update ONLY if current hubspotStatus ∈ { new_lead, noshow, not_booked } */
+    /* Update ONLY if current hubspotStatus ∈ { new_lead, not_booked } */
     const res = await Aicelerate.updateOne(
       {
         email: guestEmail,
-        'meetingDetails.hubspotStatus': { $in: ['new_lead', 'noshow','not_booked'] }
+        'meetingDetails.hubspotStatus': { $in: ['new_lead','not_booked'] }
       },
       {
         $set: {
