@@ -66,7 +66,7 @@ app.post('/whatsapp/webhook', (req, res) => {
     const Time = new Date(parseInt(message.timestamp) * 1000).toLocaleString(); // Convert UNIX to readable
     const Message = message.text?.body || 'No message';
 
-    const payload = { Name, WhatsappNumber, Time, Message };
+    const payload = { "Name": Name, "WhatsappNumber": WhatsappNumber, "Time": Time, "Message": Message };
     triggerManualJob(payload);
     res.sendStatus(200);
   } catch (err) {
