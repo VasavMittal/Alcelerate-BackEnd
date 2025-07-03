@@ -2,6 +2,7 @@
 
 const Aicelerate = require("../models/Aicelerate");
 const sendTemplate = require("./sendTemplate");
+const { updateLeadStatusByEmail } = require('./hubspotService');
 
 async function handleRemindersAndTriggers() {
   const now = Date.now();
@@ -41,11 +42,17 @@ async function handleRemindersAndTriggers() {
     const hours = stages[i];
     const leads = await Aicelerate.find({
       "meetingDetails.meetingBooked": false,
-      "meetingDetails.hubspotStatus": "not_booked",
+      "meetingDetails.hubspotStatus": { $in: ['not_booked','not_booked_first_reminder_sent'] },
       "meetingDetails.noBookReminderStage": i,
       "meetingDetails.noBookReminderTime": { $lt: new Date(now - hours * oneHour) }
     });
     for (const lead of leads) {
+      if(i+1 === 2) {
+        await updateLeadStatusByEmail(lead.email, 'not_booked_final_reminder_sent');
+      }
+      if(i+1 === 1) {
+        await updateLeadStatusByEmail(lead.email, 'not_booked_first_reminder_sent');
+      }
       await sendTemplate.sendNoBookReminder(lead, i + 1);
       await Aicelerate.updateOne({ _id: lead._id }, { $set: { "meetingDetails.noBookReminderStage": i + 1 } });
     }
@@ -60,6 +67,9 @@ async function handleRemindersAndTriggers() {
       "meetingDetails.noShowTime": { $lt: new Date(now - twentyFourHours) }
     });
     for (const lead of leads) {
+      if(stage === 2) {
+        await updateLeadStatusByEmail(lead.email, 'no_show_final_reminder_sent');
+      }
       await sendTemplate.sendNoShowReminder(lead, stage);
       await Aicelerate.updateOne({ _id: lead._id }, { $set: { "meetingDetails.noShowReminderStage": stage } });
     }
