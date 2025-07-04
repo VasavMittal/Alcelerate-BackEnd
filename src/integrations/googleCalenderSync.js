@@ -130,7 +130,6 @@ async function syncGoogleCalendarWithDB() {
         $set: {
           'meetingDetails.meetingBooked' : true,
           'meetingDetails.meetingTime'   : meetingTime,
-          'meetingDetails.noShowTime'    : meetingTime,
           'meetingDetails.meetingLink'   : hangoutLink,
           "meetingDetails.reminder24hrSent": false,
           "meetingDetails.reminder1hrSent": false,
