@@ -1,125 +1,134 @@
 // services/sendTemplate.js
-const fetch = require('node-fetch');
+const fetch = require("node-fetch");
 const templates = require("../models/MailTemplates");
-const transporter = require('../utils/smtpMailer');
+const transporter = require("../utils/smtpMailer");
 
 async function sendEmail(to, subject, body) {
-    const mailOptions = {
-      from: "support@aicelerate.ai",
-      to,
-      subject,
-      html: body,
-    };
-  
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Email sent to ${to}`);
-    } catch (err) {
-      console.error(`❌ Failed to send email to ${to}:`, err.message);
-    }
+  const mailOptions = {
+    from: '"Aicelerate" <support@aicelerate.ai>',
+    to,
+    subject,
+    html: body,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${to}`);
+  } catch (err) {
+    console.error(`❌ Failed to send email to ${to}:`, err.message);
   }
-  
+}
 
 async function sendWhatsApp(to, templateName, payload) {
-    const url = `https://graph.facebook.com/v17.0/704713369388414/messages`;
-    const token = 'YOUR_ACCESS_TOKEN';
-  
-    const body = buildWhatsAppPayload(to, templateName, payload);
-  
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-  
-      if (!response.ok) {
-        console.error(`❌ Failed to send WhatsApp message:`, response.statusText);
-      } else {
-        console.log(`✅ WhatsApp message sent to ${to}`);
-      }
-    } catch (err) {
-      console.error(`❌ Error sending WhatsApp message:`, err.message);
+  const url = `https://graph.facebook.com/v17.0/704713369388414/messages`;
+  const token = "YOUR_ACCESS_TOKEN";
+
+  const body = buildWhatsAppPayload(to, templateName, payload);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Failed to send WhatsApp message:`, response.statusText);
+    } else {
+      console.log(`✅ WhatsApp message sent to ${to}`);
     }
+  } catch (err) {
+    console.error(`❌ Error sending WhatsApp message:`, err.message);
+  }
 }
 
 function buildPayload(lead) {
   return {
     name: lead.name,
     email: lead.email,
-    date: lead.meetingDetails?.meetingTime?.toLocaleDateString() || '',
-    time: lead.meetingDetails?.meetingTime?.toLocaleTimeString() || '',
-    meetingUrl: lead.meetingDetails?.meetingLink || '',
-    shortMeetingUrl: lead.meetingDetails?.meetingLink || '',
-    rescheduleLink: "https://calendar.google.com/calendar/appointments/schedules/AcZssZ2Yd_EFVhC34rxLO6czM5HWZRYADzzupQg9BbXKikBEXJX4QiNsWb_Qb0xFu6jxitocPrU1juVJ?gv=true",
+    date: lead.meetingDetails?.meetingTime?.toLocaleDateString() || "",
+    time: lead.meetingDetails?.meetingTime?.toLocaleTimeString() || "",
+    meetingUrl: lead.meetingDetails?.meetingLink || "",
+    shortMeetingUrl: lead.meetingDetails?.meetingLink || "",
+    rescheduleLink:
+      "https://calendar.google.com/calendar/appointments/schedules/AcZssZ2Yd_EFVhC34rxLO6czM5HWZRYADzzupQg9BbXKikBEXJX4QiNsWb_Qb0xFu6jxitocPrU1juVJ?gv=true",
   };
 }
 
 function buildWhatsAppPayload(to, templateName, payload) {
-  if(templateName === 'meeting_reminder_24hr' || templateName === 'meeting_booked') {  
+  if (
+    templateName === "meeting_reminder_24hr" ||
+    templateName === "meeting_booked"
+  ) {
     return {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       to: to,
-      type: 'template',
+      type: "template",
       template: {
         name: templateName,
-        language: { code: 'en' },
+        language: { code: "en" },
         components: [
           {
-            type: 'body',
+            type: "body",
             parameters: [
-              { type: 'text', text: payload.name },
-              { type: 'text', text: payload.date },
-              { type: 'text', text: payload.time },
-              { type: 'text', text: payload.url }
-            ]
-          }
-        ]
-      }
+              { type: "text", text: payload.name },
+              { type: "text", text: payload.date },
+              { type: "text", text: payload.time },
+              { type: "text", text: payload.url },
+            ],
+          },
+        ],
+      },
     };
   }
-  if(templateName === 'meeting_reminder_one_hour_before') {
+  if (templateName === "meeting_reminder_one_hour_before") {
     return {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       to: to,
-      type: 'template',
+      type: "template",
       template: {
         name: templateName,
-        language: { code: 'en' },
+        language: { code: "en" },
         components: [
           {
-            type: 'body',
+            type: "body",
             parameters: [
-              { type: 'text', text: payload.name },
-              { type: 'text', text: payload.time },
-              { type: 'text', text: payload.url }
-            ]
-          }
-        ]
-      }
+              { type: "text", text: payload.name },
+              { type: "text", text: payload.time },
+              { type: "text", text: payload.url },
+            ],
+          },
+        ],
+      },
     };
   }
-  if(templateName === 'meeting_not_attend_reminder_1' || templateName === 'meeting_not_attend_reminder_2' || templateName === 'reminder_to_book_1' || templateName === 'reminder_to_book_2' || templateName === 'meeting_not_booked') {
+  if (
+    templateName === "meeting_not_attend_reminder_1" ||
+    templateName === "meeting_not_attend_reminder_2" ||
+    templateName === "reminder_to_book_1" ||
+    templateName === "reminder_to_book_2" ||
+    templateName === "meeting_not_booked"
+  ) {
     return {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       to: to,
-      type: 'template',
+      type: "template",
       template: {
         name: templateName,
-        language: { code: 'en' },
+        language: { code: "en" },
         components: [
           {
-            type: 'body',
+            type: "body",
             parameters: [
-              { type: 'text', text: payload.name },
-              { type: 'text', text: payload.url }
-            ]
-          }
-        ]
-      }
+              { type: "text", text: payload.name },
+              { type: "text", text: payload.url },
+            ],
+          },
+        ],
+      },
     };
   }
 }
@@ -132,9 +141,9 @@ async function sendMeetingBooked(lead) {
     date: payload.date,
     time: payload.time,
     url: payload.meetingUrl,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
-  await sendWhatsApp(lead.name, 'meeting_booked', whatsAppPayload);
+  await sendWhatsApp(lead.name, "meeting_booked", whatsAppPayload);
 }
 
 async function sendMeetingReminder24hr(lead) {
@@ -145,9 +154,9 @@ async function sendMeetingReminder24hr(lead) {
     date: payload.date,
     time: payload.time,
     url: payload.meetingUrl,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
-  await sendWhatsApp(lead.name, 'meeting_reminder_24hr', whatsAppPayload);
+  await sendWhatsApp(lead.name, "meeting_reminder_24hr", whatsAppPayload);
 }
 
 async function sendMeetingReminder1hr(lead) {
@@ -158,9 +167,13 @@ async function sendMeetingReminder1hr(lead) {
     date: payload.date,
     time: payload.time,
     url: payload.meetingUrl,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
-  await sendWhatsApp(lead.name, 'meeting_reminder_one_hour_before', whatsAppPayload);
+  await sendWhatsApp(
+    lead.name,
+    "meeting_reminder_one_hour_before",
+    whatsAppPayload
+  );
 }
 
 async function sendBookingReminder(lead) {
@@ -171,7 +184,7 @@ async function sendBookingReminder(lead) {
     date: payload.date,
     time: payload.time,
     url: payload.rescheduleLink,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
   await sendWhatsApp(lead.name, `meeting_not_booked`, whatsAppPayload);
 }
@@ -184,7 +197,7 @@ async function sendNoBookReminder(lead, stage) {
     date: payload.date,
     time: payload.time,
     url: payload.rescheduleLink,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
   await sendWhatsApp(lead.name, `reminder_to_book_${stage}`, whatsAppPayload);
 }
@@ -197,9 +210,13 @@ async function sendNoShowReminder(lead, stage) {
     date: payload.date,
     time: payload.time,
     url: payload.rescheduleLink,
-  }
+  };
   await sendEmail(lead.email, email.subject, email.body);
-  await sendWhatsApp(lead.name, `meeting_not_attend_reminder_${stage}`, whatsAppPayload);
+  await sendWhatsApp(
+    lead.name,
+    `meeting_not_attend_reminder_${stage}`,
+    whatsAppPayload
+  );
 }
 
 module.exports = {
