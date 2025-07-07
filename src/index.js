@@ -2,7 +2,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const { startCronJobs, triggerManualJob } = require("./models/cron/cronJobs");
+const { startCronJobs, triggerManualJob, triggerFormJob } = require("./models/cron/cronJobs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +16,7 @@ mongoose
     console.log("✅ MongoDB connected");
 
     // ⏱️ Start the cron after DB connects
-    startCronJobs();
+    //startCronJobs();
 
     // 🌐 Start API server
     app.listen(PORT, () => {
@@ -38,22 +38,11 @@ app.post("/log-form-data", (req, res) => {
   const formData = req.body;
   const timestamp = new Date().toISOString();
 
-  const logEntry = `Timestamp: ${timestamp}\nData: ${JSON.stringify(
-    formData
-  )}\n\n`;
+  console.log("[LOG] New form submission:", JSON.stringify({ timestamp, formData }));
 
-  // Append to log.txt in the same directory
-  const logFilePath = path.join(__dirname, "form_submissions_log.txt");
+  triggerFormJob(formData).catch(err => console.error("[LOG] triggerFormJob error:", err.message));
 
-  fs.appendFile(logFilePath, logEntry, (err) => {
-    if (err) {
-      console.error("Error writing to log file:", err);
-      return res.status(500).send("Failed to log submission.");
-    }
-
-    console.log("Form submission logged successfully.");
-    res.status(200).send("Form submission logged successfully.");
-  });
+  res.status(200).send("Form submission logged successfully.");
 });
 
 // 🔗 Webhook Endpoint (e.g., POST /webhook)
