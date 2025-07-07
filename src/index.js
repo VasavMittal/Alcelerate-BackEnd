@@ -10,15 +10,12 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
   console.log("✅ MongoDB connected");
 
   // ⏱️ Start the cron after DB connects
-  //startCronJobs();
+  startCronJobs();
 
   // 🌐 Start API server
   app.listen(PORT, () => {
@@ -30,6 +27,10 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 const VERIFY_TOKEN = 'aicelerate_token'; 
 
+app.get("/health", (req, res) => {
+  console.log('health check');
+  res.status(200).send('OK');
+});
 // 🔗 Webhook Endpoint (e.g., POST /webhook)
 app.get('/whatsapp/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
@@ -49,7 +50,6 @@ app.get('/whatsapp/webhook', (req, res) => {
 // POST route to handle incoming messages and statuses
 app.post('/whatsapp/webhook', (req, res) => {
   try {
-    console.log('Webhook Received: ', JSON.stringify(req.body, null, 2));
     const entry = req.body?.entry?.[0];
     const change = entry?.changes?.[0];
     const value = change?.value;
@@ -65,7 +65,7 @@ app.post('/whatsapp/webhook', (req, res) => {
     const Time = new Date(parseInt(message.timestamp) * 1000).toLocaleString(); // Convert UNIX to readable
     const Message = message.text?.body || 'No message';
 
-    const payload = { Name, WhatsappNumber, Time, Message };
+    const payload = { "Name": Name, "WhatsappNumber": WhatsappNumber, "Time": Time, "Message": Message };
     triggerManualJob(payload);
     res.sendStatus(200);
   } catch (err) {

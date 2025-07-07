@@ -55,7 +55,7 @@ async function syncHubSpotLeadsWithDB() {
     const email = lead.properties?.email;
     if (!email) { emailNotFound++; continue; }
 
-    const hubspotStatus   = lead.properties?.relationship_status || "new_lead";
+    const hubspotStatus   = (lead.properties?.relationship_status || 'new_lead').toLowerCase();
     const fullName        = `${lead.properties?.firstname || ""} ${lead.properties?.lastname || ""}`.trim();
     const contact         = lead.properties?.hs_whatsapp_phone_number || "";
     const hubspotId       = lead.id || lead.properties?.hs_object_id;

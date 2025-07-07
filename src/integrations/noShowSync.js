@@ -30,7 +30,8 @@ async function syncNoShows() {
       },
       {
         $set: {
-          "meetingDetails.noShowReminderStage": 1
+          "meetingDetails.noShowReminderStage": 1,
+          'meetingDetails.noShowTime':  now,
         }
       }
     );    

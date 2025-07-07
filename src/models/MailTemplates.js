@@ -51,7 +51,7 @@ function meetingReminder1hrEmail(payload) {
     };
 }
 
-function noShowReminderEmail(payload) {
+function noShowReminder1Email(payload) {
     return {
         subject: `Sorry we missed you — let’s reschedule your session`,
         html: `
@@ -66,7 +66,7 @@ function noShowReminderEmail(payload) {
     };
 }
 
-function noShowReminderFollowupEmail(payload) {
+function noShowReminder2Email(payload) {
     return {
         subject: `Your ideal prospects are waiting — let’s reschedule`,
         html: `
@@ -129,8 +129,8 @@ module.exports = {
     meetingBookedEmail,
     meetingReminder24hrEmail,
     meetingReminder1hrEmail,
-    noShowReminderEmail,
-    noShowReminderFollowupEmail,
+    noShowReminder1Email,
+    noShowReminder2Email,
     meetingNotBookedEmail,
     noBookingReminder1Email,
     noBookingReminder2Email,
