@@ -6,9 +6,11 @@ const { startCronJobs, triggerManualJob, triggerFormJob } = require("./models/cr
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
 
 mongoose
   .connect(process.env.MONGO_URI)
