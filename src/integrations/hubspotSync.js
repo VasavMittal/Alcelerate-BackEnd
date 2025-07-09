@@ -62,33 +62,53 @@ async function syncHubSpotLeadsWithDB() {
     const hubspotCreated  = new Date(lead.properties?.createdate || lead.createdAt);
 
     try {
-      const res = await Aicelerate.updateOne(
-        { email },                                       // 🔍 find by email only
-        {
-          $set: {                                        // 📝 always try to set status
-            'meetingDetails.hubspotStatus': hubspotStatus
-          },
-          $setOnInsert: {                                // ➕ only on very first insert
-            name: fullName,
-            contact,
-            hubspotId,
-            'meetingDetails.noBookReminderTime': hubspotCreated,
-            createdAt: hubspotCreated
-          }
-        },
-        { upsert: true }
-      );
+      const existing = await Aicelerate.findOne({ email });
 
-      if (res.upsertedCount) {
+      if (existing && hubspotStatus === 'new_lead') {
+        // Treat as fresh lead
+        await Aicelerate.deleteOne({ email });
+        await Aicelerate.create({
+          email,
+          name: fullName,
+          contact,
+          hubspotId,
+          meetingDetails: {
+            hubspotStatus,
+            noBookReminderTime: hubspotCreated
+          },
+          createdAt: hubspotCreated
+        });
         inserted++;
-        console.log(`➕ Inserted new lead: ${email}`);
-      } else if (res.modifiedCount) {
-        updated++;
-        console.log(`🔄 Status updated for: ${email} → ${hubspotStatus}`);
+        console.log(`🔁 Reinserted as new lead: ${email}`);
       } else {
-        skipped++;
-        // Stored status already equals hubspotStatus
-      }
+        // Normal upsert logic
+        const res = await Aicelerate.updateOne(
+          { email },
+          {
+            $set: {
+              'meetingDetails.hubspotStatus': hubspotStatus
+            },
+            $setOnInsert: {
+              name: fullName,
+              contact,
+              hubspotId,
+              'meetingDetails.noBookReminderTime': hubspotCreated,
+              createdAt: hubspotCreated
+            }
+          },
+          { upsert: true }
+        );
+      
+        if (res.upsertedCount) {
+          inserted++;
+          console.log(`➕ Inserted new lead: ${email}`);
+        } else if (res.modifiedCount) {
+          updated++;
+          console.log(`🔄 Status updated for: ${email} → ${hubspotStatus}`);
+        } else {
+          skipped++;
+        }
+      }      
     } catch (err) {
       skipped++;
       console.error(`❌ DB error for ${email}:`, err.message);
