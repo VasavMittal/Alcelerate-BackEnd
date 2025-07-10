@@ -50,6 +50,9 @@ async function triggerManualJob(payload) {
 async function triggerFormJob(data) {
   console.log("[GOOGLE SHEETJOB] ▶️  starting:", JSON.stringify(data));
 
+  if(data.url == null){
+    data.url = " ";
+  }
   // ---------- 1. Google Sheet ----------
   const gsParams = new URLSearchParams({
     "Date and Time"               : data.formatted,
