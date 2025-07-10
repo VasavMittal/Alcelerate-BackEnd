@@ -9,12 +9,12 @@ const HS_PORTAL = process.env.HUBSPOT_PORTAL;
 const HS_FORM = process.env.HUBSPOT_FORM;
 
 function startCronJobs() {
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("*/3 * * * *", async () => {
     console.log("[CRON] Running scheduled lead automation task...");
     await runAutomationTasks();
   });
 
-  console.log("✅ Cron job scheduled: Every 1 minute");
+  console.log("✅ Cron job scheduled: Every 3 minute");
 }
 async function triggerManualJob(payload) {
     const { Name, WhatsappNumber, Time, Message } = payload;
