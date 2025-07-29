@@ -26,12 +26,14 @@ async function syncNoShows() {
     const res = await Aicelerate.updateOne(
       {
         _id: lead._id,
-        "meetingDetails.noShowReminderStage": { $exists: false }   // ← extra guard
+        "meetingDetails.noShowReminderStage": { $exists: false }
       },
       {
         $set: {
           "meetingDetails.noShowReminderStage": 1,
-          'meetingDetails.noShowTime':  now,
+          'meetingDetails.noShowTime': now,
+          'meetingDetails.noBookReminderStage': 0,
+          'meetingDetails.noBookReminderTime': null
         }
       }
     );    

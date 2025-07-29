@@ -128,13 +128,15 @@ async function syncGoogleCalendarWithDB() {
       },
       {
         $set: {
-          'meetingDetails.meetingBooked' : true,
-          'meetingDetails.meetingTime'   : meetingTime,
-          'meetingDetails.meetingLink'   : hangoutLink,
+          'meetingDetails.meetingBooked': true,
+          'meetingDetails.meetingTime': meetingTime,
+          'meetingDetails.meetingLink': hangoutLink,
           "meetingDetails.reminder24hrSent": false,
           "meetingDetails.reminder1hrSent": false,
           'meetingDetails.googleCalendarEventId': gcalEventId,
-          'meetingDetails.hubspotStatus' : 'meeting_booked',
+          'meetingDetails.hubspotStatus': 'meeting_booked',
+          'meetingDetails.noBookReminderStage': 0,
+          'meetingDetails.noBookReminderTime': null
         },
       }
     );
@@ -162,9 +164,12 @@ async function syncGoogleCalendarWithDB() {
 
     const res = await Aicelerate.updateOne(
       { email },
-      { $set: { 'meetingDetails.hubspotStatus': 'not_booked',
-                'meetingDetails.meetingBooked': false,
-                'meetingDetails.noBookReminderStage': 0 } }
+      { $set: { 
+        'meetingDetails.hubspotStatus': 'not_booked',
+        'meetingDetails.meetingBooked': false,
+        'meetingDetails.noBookReminderStage': 0,
+        'meetingDetails.noBookReminderTime': new Date()
+      } }
     );
 
     if (res.modifiedCount) {
