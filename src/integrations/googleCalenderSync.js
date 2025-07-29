@@ -71,6 +71,9 @@ async function fetchCalendarEvents() {
     const response = await calendar.events.list({
       calendarId: calendarId,
       timeMin: new Date().toISOString(),
+      timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Next 7 days
+      q: 'Aicelerate', // Events containing these keywords
+      showDeleted: false,
       maxResults: 1000,
       singleEvents: true,
       orderBy: 'startTime',
