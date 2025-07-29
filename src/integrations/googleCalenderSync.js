@@ -107,7 +107,6 @@ async function fetchCalendarEvents(creatorEmail = null) {
 /* ------------------------------------------------------------------ */
 async function syncGoogleCalendarWithDB() {
   const events = await fetchCalendarEvents(process.env.GOOGLE_CALENDAR_OWNER_EMAIL);
-  console.log("Events: {}", events);
   const calendarEmailsSet = new Set();
 
   /* --------- 1.  Handle every booked event | meeting_booked --------- */
@@ -116,6 +115,7 @@ async function syncGoogleCalendarWithDB() {
     console.log(`Event: ${event.summary}, Creator: ${event.creator?.email}`);
     
     const attendees = event.attendees || [];
+    console.log(`Event Attendees: ${attendees}`);
     const guest = attendees.find(a =>
       a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL
     );
