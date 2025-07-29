@@ -60,7 +60,7 @@ const calendar = google.calendar({ version: 'v3', auth: authClient });
 /* ------------------------------------------------------------------ */
 /* 2️⃣  FETCH EVENTS                                                   */
 /* ------------------------------------------------------------------ */
-async function fetchCalendarEvents() {
+async function fetchCalendarEvents(creatorEmail = null) {
   try {
     if (typeof authClient.authorize === 'function') {
       await authClient.authorize();
@@ -71,20 +71,28 @@ async function fetchCalendarEvents() {
     const response = await calendar.events.list({
       calendarId: calendarId,
       timeMin: new Date().toISOString(),
-      timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Next 7 days
-      q: 'Aicelerate', // Events containing these keywords
+      timeMax: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      q: 'Aicelerate',
       showDeleted: false,
       maxResults: 1000,
       singleEvents: true,
       orderBy: 'startTime',
     });
 
-    const events = response.data.items || [];
+    let events = response.data.items || [];
+
+    // Filter by specific creator email if provided
+    if (creatorEmail) {
+      events = events.filter(event => 
+        event.creator?.email?.toLowerCase() === creatorEmail.toLowerCase()
+      );
+      console.log(`📧 Filtered to events created by: ${creatorEmail}`);
+    }
 
     if (events.length === 0) {
-      console.log('📭 No upcoming events found.');
+      console.log('📭 No events found for the specified creator.');
     } else {
-      console.log(`📅 Found ${events.length} upcoming events.`);
+      console.log(`📅 Found ${events.length} events by creator: ${creatorEmail || 'any'}`);
     }
 
     return events;
@@ -98,12 +106,15 @@ async function fetchCalendarEvents() {
 /* 3️⃣  SYNC WITH MONGODB & HUBSPOT                                   */
 /* ------------------------------------------------------------------ */
 async function syncGoogleCalendarWithDB() {
-  const events = await fetchCalendarEvents();
+  const events = await fetchCalendarEvents(process.env.GOOGLE_CALENDAR_OWNER_EMAIL);
   console.log("Events: {}", events);
   const calendarEmailsSet = new Set();
 
   /* --------- 1.  Handle every booked event | meeting_booked --------- */
   for (const event of events) {
+    // Log creator info for debugging
+    console.log(`Event: ${event.summary}, Creator: ${event.creator?.email}`);
+    
     const attendees = event.attendees || [];
     const guest = attendees.find(a =>
       a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL
