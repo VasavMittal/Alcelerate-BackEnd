@@ -115,18 +115,18 @@ async function syncGoogleCalendarWithDB() {
     console.log(`Event: ${event.summary}, Creator: ${event.creator?.email}`);
     
     const attendees = event.attendees || [];
-    console.log(`Event Attendees: ${attendees}`);
+    console.log(`Event Attendees:`, attendees.map(a => ({
+      email: a.email,
+      displayName: a.displayName,
+      responseStatus: a.responseStatus
+    })));
     const guest = attendees.find(a =>
-      a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL
+      a.email && a.email !== process.env.GOOGLE_CALENDAR_OWNER_EMAIL && a.email !== 'da@aicelerate.me'
     );
-    console.log(guest?.email);
     if (!guest?.email) continue;
-    if(guest?.email == undefined) {
-      console.log('No email found');
-      continue;
-    }
 
     const guestEmail  = guest.email.toLowerCase();
+    console.log(`Guest Email: ${guestEmail}`);
     calendarEmailsSet.add(guestEmail);
 
     const meetingTime = event.start?.dateTime || null;
