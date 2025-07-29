@@ -99,6 +99,7 @@ async function fetchCalendarEvents() {
 /* ------------------------------------------------------------------ */
 async function syncGoogleCalendarWithDB() {
   const events = await fetchCalendarEvents();
+  console.log("Events: {}", events);
   const calendarEmailsSet = new Set();
 
   /* --------- 1.  Handle every booked event | meeting_booked --------- */
@@ -109,6 +110,10 @@ async function syncGoogleCalendarWithDB() {
     );
     console.log(guest?.email);
     if (!guest?.email) continue;
+    if(guest?.email == undefined) {
+      console.log('No email found');
+      continue;
+    }
 
     const guestEmail  = guest.email.toLowerCase();
     calendarEmailsSet.add(guestEmail);
