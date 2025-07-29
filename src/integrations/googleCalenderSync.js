@@ -71,7 +71,7 @@ async function fetchCalendarEvents() {
     const response = await calendar.events.list({
       calendarId: calendarId,
       timeMin: new Date().toISOString(),
-      maxResults: 100,
+      maxResults: 1000,
       singleEvents: true,
       orderBy: 'startTime',
     });
