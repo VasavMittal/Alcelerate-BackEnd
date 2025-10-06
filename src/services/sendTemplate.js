@@ -60,8 +60,8 @@ function buildPayload(lead) {
 
 function buildWhatsAppPayload(to, templateName, payload) {
   if (
-    templateName === "meeting_reminder_24" ||
-    templateName === "meeting_booked"
+    templateName === "meeting_reminder_24_v2" ||
+    templateName === "meeting_booked_v5"
   ) {
     return {
       messaging_product: "whatsapp",
@@ -84,7 +84,7 @@ function buildWhatsAppPayload(to, templateName, payload) {
       },
     };
   }
-  if (templateName === "meeting_reminder_one_hour_before") {
+  if (templateName === "_meeting_reminder_one_hour_before_v2") {
     return {
       messaging_product: "whatsapp",
       to: to,
@@ -106,11 +106,11 @@ function buildWhatsAppPayload(to, templateName, payload) {
     };
   }
   if (
-    templateName === "meeting_not_attend_reminder_1" ||
-    templateName === "meeting_not_attend_reminder_2" ||
-    templateName === "reminder_to_book_1" ||
-    templateName === "reminder_to_book_2" ||
-    templateName === "meeting_not_booked"
+    templateName === "meeting_not_attend_reminder_1_v2" ||
+    templateName === "meeting_not_attend_reminder_2_v2" ||
+    templateName === "reminder_to_book_1_v2" ||
+    templateName === "reminder_to_book_2_v2" ||
+    templateName === "meeting_not_booked_v2"
   ) {
     return {
       messaging_product: "whatsapp",
@@ -143,7 +143,7 @@ async function sendMeetingBooked(lead) {
     url: payload.meetingUrl,
   };
   await sendEmail(lead.email, email.subject, email.html);
-  await sendWhatsApp(lead.contact, "meeting_booked", whatsAppPayload);
+  await sendWhatsApp(lead.contact, "meeting_booked_v5", whatsAppPayload);
 }
 
 async function sendMeetingReminder24hr(lead) {
@@ -156,7 +156,7 @@ async function sendMeetingReminder24hr(lead) {
     url: payload.meetingUrl,
   };
   await sendEmail(lead.email, email.subject, email.html);
-  await sendWhatsApp(lead.contact, "meeting_reminder_24", whatsAppPayload);
+  await sendWhatsApp(lead.contact, "meeting_reminder_24_v2", whatsAppPayload);
 }
 
 async function sendMeetingReminder1hr(lead) {
@@ -171,7 +171,7 @@ async function sendMeetingReminder1hr(lead) {
   await sendEmail(lead.email, email.subject, email.html);
   await sendWhatsApp(
     lead.contact,
-    "meeting_reminder_one_hour_before",
+    "_meeting_reminder_one_hour_before_v2",
     whatsAppPayload
   );
 }
@@ -186,7 +186,7 @@ async function sendBookingReminder(lead) {
     url: payload.rescheduleLink,
   };
   await sendEmail(lead.email, email.subject, email.html);
-  await sendWhatsApp(lead.contact, `meeting_not_booked`, whatsAppPayload);
+  await sendWhatsApp(lead.contact, `meeting_not_booked_v2`, whatsAppPayload);
 }
 
 async function sendNoBookReminder(lead, stage) {
@@ -201,7 +201,7 @@ async function sendNoBookReminder(lead, stage) {
   await sendEmail(lead.email, email.subject, email.html);
   await sendWhatsApp(
     lead.contact,
-    `reminder_to_book_${stage}`,
+    `reminder_to_book_${stage}_v2`,
     whatsAppPayload
   );
 }
@@ -218,7 +218,7 @@ async function sendNoShowReminder(lead, stage) {
   await sendEmail(lead.email, email.subject, email.html);
   await sendWhatsApp(
     lead.contact,
-    `meeting_not_attend_reminder_${stage}`,
+    `meeting_not_attend_reminder_${stage}_v2`,
     whatsAppPayload
   );
 }
