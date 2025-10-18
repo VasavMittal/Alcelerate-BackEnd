@@ -208,7 +208,7 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
         row[2] = 'meeting_booked';
         row[4] = calendarData.meetingTime;
         row[5] = ''; // Clear reconnect time
-      } else if(timeUntilMeeting <= twentyFiveHours){
+      } else if(timeUntilMeeting >= twentyFiveHours){
         console.log(`[GOOGLE-SHEET] ⏰ PHASE 2: Email ${email} NOT in calendar - Status → reconnect_SMS_message_2`);
         row[2] = 'reconnect_SMS_message_2';
         await sendTemplate.sendGoogleSheetReconnectReminder2(row);
