@@ -76,7 +76,7 @@ function buildWhatsAppPayload(to, templateName, payload) {
             parameters: [
               { type: "text", text: payload.name },
               { type: "text", text: payload.date },
-              { type: "text", text: payload.time },
+              { type: "text", text: payload.time + " UTC" },
               { type: "text", text: payload.url },
             ],
           },
@@ -97,7 +97,7 @@ function buildWhatsAppPayload(to, templateName, payload) {
             type: "body",
             parameters: [
               { type: "text", text: payload.name },
-              { type: "text", text: payload.time },
+              { type: "text", text: payload.time + " UTC" },
               { type: "text", text: payload.url },
             ],
           },
