@@ -84,7 +84,7 @@ function buildWhatsAppPayload(to, templateName, payload) {
       },
     };
   }
-  if (templateName === "_meeting_reminder_one_hour_before_v2") {
+  if (templateName === "_meeting_reminder_one_hour_before_v2" || templateName === "retarget_meeting_reminder_1") {
     return {
       messaging_product: "whatsapp",
       to: to,
@@ -110,7 +110,9 @@ function buildWhatsAppPayload(to, templateName, payload) {
     templateName === "meeting_not_attend_reminder_2_v2" ||
     templateName === "reminder_to_book_1_v2" ||
     templateName === "reminder_to_book_2_v2" ||
-    templateName === "meeting_not_booked_v2"
+    templateName === "meeting_not_booked_v2" ||
+    templateName === "retarget_meeting_reminder_2" ||
+    templateName === "retarget_no_show"
   ) {
     return {
       messaging_product: "whatsapp",
@@ -125,6 +127,36 @@ function buildWhatsAppPayload(to, templateName, payload) {
             parameters: [
               { type: "text", text: payload.name },
               { type: "text", text: payload.url },
+            ],
+          },
+        ],
+      },
+    };
+  }
+  if (templateName === "retarget_message_1" || templateName === "retarget_message_2") {
+    return {
+      messaging_product: "whatsapp",
+      to: to,
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: [
+              { type: "text", text: payload.name }
+            ],
+          },
+          {
+            type: "button",
+            sub_type: "url",
+            index: "0", // first button (Book Now)
+            parameters: [
+              {
+                type: "text",
+                text: payload.url, // dynamic part for {{1}}
+              },
             ],
           },
         ],
@@ -223,6 +255,81 @@ async function sendNoShowReminder(lead, stage) {
   );
 }
 
+/* ================================================================ */
+/* GOOGLE SHEET EMAIL + WHATSAPP FUNCTIONS                          */
+/* ================================================================ */
+
+function buildGoogleSheetPayload(sheetRow, meetingLink = "") {
+  return {
+    first_name: sheetRow[0] || "",
+    email: sheetRow[1] || "",
+    date: sheetRow[4] ? new Date(sheetRow[4]).toLocaleDateString() : "",
+    time: sheetRow[4] ? new Date(sheetRow[4]).toLocaleTimeString() : "",
+    meeting_url: meetingLink || "",
+    rescheduleLink: "https://calendar.app.google/nHHdu1bDeNw979gr5",
+    videoLink : "https://www.youtube.com/watch?v=DoFKdu2tfSU&feature=youtu.be"
+  };
+}
+
+async function sendGoogleSheetMeetingBookedReminder1(sheetRow, meetingLink) {
+  const payload = buildGoogleSheetPayload(sheetRow, meetingLink);
+  const email = templates.googleSheetMeetingBookedReminder1(payload);
+  const whatsAppPayload = {
+    name: payload.first_name,
+    date: payload.date,
+    time: payload.time,
+    url: payload.meeting_url,
+  };
+  await sendEmail(payload.email, email.subject, email.html);
+  await sendWhatsApp(sheetRow[3], "retarget_meeting_reminder_1", whatsAppPayload);
+}
+
+async function sendGoogleSheetMeetingBookedReminder2(sheetRow, meetingLink) {
+  const payload = buildGoogleSheetPayload(sheetRow, meetingLink);
+  const email = templates.googleSheetMeetingBookedReminder2(payload);
+  const whatsAppPayload = {
+    name: payload.first_name,
+    date: payload.date,
+    time: payload.time,
+    url: payload.meeting_url,
+  };
+  await sendEmail(payload.email, email.subject, email.html);
+  await sendWhatsApp(sheetRow[3], "retarget_meeting_reminder_2", whatsAppPayload);
+}
+
+async function sendGoogleSheetNoShowReminder(sheetRow) {
+  const payload = buildGoogleSheetPayload(sheetRow);
+  const email = templates.googleSheetNoShowReminder(payload);
+  const whatsAppPayload = {
+    name: payload.first_name,
+    url: payload.rescheduleLink,
+  };
+  await sendEmail(payload.email, email.subject, email.html);
+  await sendWhatsApp(sheetRow[3], "retarget_no_show", whatsAppPayload);
+}
+
+async function sendGoogleSheetReconnectReminder1(sheetRow) {
+  const payload = buildGoogleSheetPayload(sheetRow);
+  const email = templates.reConnectReminder1Email(payload);
+  const whatsAppPayload = {
+    name: payload.first_name,
+    url: payload.rescheduleLink,
+  };
+  await sendEmail(payload.email, email.subject, email.html);
+  await sendWhatsApp(sheetRow[3], "retarget_message_1", whatsAppPayload);
+}
+
+async function sendGoogleSheetReconnectReminder2(sheetRow) {
+  const payload = buildGoogleSheetPayload(sheetRow);
+  const email = templates.reConnectReminder2Email(payload);
+  const whatsAppPayload = {
+    name: payload.first_name,
+    url: payload.rescheduleLink,
+  };
+  await sendEmail(payload.email, email.subject, email.html);
+  await sendWhatsApp(sheetRow[3], "retarget_message_2", whatsAppPayload);
+}
+
 module.exports = {
   sendMeetingReminder24hr,
   sendMeetingReminder1hr,
@@ -230,4 +337,9 @@ module.exports = {
   sendNoShowReminder,
   sendMeetingBooked,
   sendBookingReminder,
+  sendGoogleSheetMeetingBookedReminder1,
+  sendGoogleSheetMeetingBookedReminder2,
+  sendGoogleSheetNoShowReminder,
+  sendGoogleSheetReconnectReminder1,
+  sendGoogleSheetReconnectReminder2,
 };

@@ -203,4 +203,4 @@ async function syncGoogleCalendarWithDB() {
   console.log('✅ Google Calendar sync complete.');
 }
 
-module.exports = { syncGoogleCalendarWithDB };
+module.exports = { syncGoogleCalendarWithDB, fetchCalendarEvents };

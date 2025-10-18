@@ -6,6 +6,7 @@ const calendarSync = require("../integrations/googleCalenderSync");
 const leadProcessor = require("../services/leadProcessor");
 const sendTemplate = require("../services/sendTemplate");
 const noShowSync = require("../integrations/noShowSync");
+const googleSheetSync = require("../integrations/googleSheetSync");
 
 async function runAutomationTasks() {
   try {
@@ -27,9 +28,20 @@ async function runAutomationTasks() {
     console.error("[Automation Error]", err);
   }
 }
+async function runGoogleSheetsAutomationTask() {
+  try {
+    console.log("[GOOGLE-SHEETS-AUTOMATION] Starting Google Sheets automation...");
 
+    // Handle all Google Sheet reminders and triggers
+    await googleSheetSync.handleGoogleSheetReminders();
+
+    console.log("[GOOGLE-SHEETS-AUTOMATION] All tasks completed.");
+  } catch (err) {
+    console.error("[GOOGLE-SHEETS-AUTOMATION Error]", err);
+  }
+}
 // Export function for manual or scheduled use
-module.exports = { runAutomationTasks };
+module.exports = { runAutomationTasks, runGoogleSheetsAutomationTask };
 
 // Optional: Uncomment to run directly when this file is executed
 // runAutomationTasks();

@@ -227,6 +227,83 @@ function noBookingReminder2Email(payload) {
   };
 }
 
+function reConnectReminder1Email(payload) {
+  return {
+    subject: `Let's reconnect - and see AIcelerate in action 🚀`,
+    html: `
+        <p>Hi ${payload.first_name},</p>
+        <p>It's been a while since we last spoke - hope you've been doing great!</p>
+        <p>I wanted to reach out again because we've made some exciting progress with <strong>AIcelerate</strong>, our AI-powered lead generation platform. The tool now delivers <strong>guaranteed qualified meetings</strong>, and we're currently offering a <strong>free trial</strong>, including your <strong>first meeting completely on us</strong>.</p>
+        <p>It's a great chance to see the performance of AIcelerate firsthand: no risk, just results.</p>
+        <p>Would you be open to a short <strong>15-minute call next week</strong> to explore how it could work for your business? If yes, then please book your slot via the link below:</p>
+        <p> <a href="${payload.rescheduleLink}">Schedule Your Session</a></p></p>
+        <p>Best regards,<br><strong>Alla</strong><br>AIcelerate Team</p>
+    `,
+  };
+}
+
+function reConnectReminder2Email(payload) {
+  return {
+    subject: `See how others are booking 10-20 meetings per week with AIcelerate`,
+    html: `
+        <p>Hi ${payload.first_name},</p>
+        <p>Just wanted to share something exciting. We recently recorded a short video showcasing <Strong>real cases and results</Strong> our clients are achieving with AIcelerate.</p>
+        <p>Companies like X-Technology, Holofair, and Trinity are now getting <strong>10-20 qualified meetings per week</strong>, all powered by AI.</p>
+        <p><strong>🎥 <a href="${payload.videoLink}">Watch the video here</a></strong></p>
+        <p>If you'd like, we can set up your <strong>free trial</strong> and get your <strong>first meeting for free</strong> - just to show what's possible. Would you have time this week for a quick intro call? If yes, then please book your meeting via the link below:</p>
+        <p><a href="${payload.rescheduleLink}">Schedule Your Session</a></p>
+        <p>Best regards,<br><strong>Alla</strong><br>AIcelerate Team</p>
+    `,
+  };
+}
+
+function googleSheetMeetingBookedReminder1(payload) {
+  return {
+    subject: `Reminder: Your AIcelerate trial session is tomorrow 🚀`,
+    html: `
+        <p>Dear ${payload.first_name},</p>
+        <p>This is a friendly reminder that your AIcelerate free trial strategy session is scheduled for:</p>
+        <p><strong>Date:</strong> ${payload.date}<br>
+        <strong>Time:</strong> ${payload.time}<br>
+        <strong>Meeting Link:</strong> <a href="${payload.meeting_url}">${payload.meeting_url}</a></p>
+        <p>In this call, we'll walk you through how AIcelerate uses AI to find verified leads, automate outreach, and guarantee qualified meetings.</p>
+        <p><strong>👉 During the session, we'll also activate your free trial and show you your first opportunities in real time.</strong></p>
+        <p>We look forward to speaking with you!</p>
+        <p>Best regards,<br><strong>Alla</strong><br>AIcelerate Team</p>
+    `,
+  };
+}
+
+function googleSheetMeetingBookedReminder2(payload) {
+  return {
+    subject: `Your AIcelerate trial session starts in 1 hour 💡`,
+    html: `
+        <p>Dear ${payload.first_name},</p>
+        <p>Your AIcelerate free trial session will begin in one hour.</p>
+        <p><strong>Date:</strong> ${payload.date}<br>
+        <strong>Time:</strong> ${payload.time}<br>
+        <strong>Meeting Link:</strong> <a href="${payload.meeting_url}">${payload.meeting_url}</a></p>
+        <p>In this call, we'll show you how AIcelerate automates outreach and delivers qualified meetings — and we'll activate your trial account so you can start seeing real results right away.</p>
+        <p>See you soon!</p>
+        <p>Best regards,<br><strong>Alla</strong><br>AIcelerate Team</p>
+    `,
+  };
+}
+
+function googleSheetNoShowReminder(payload) {
+  return {
+    subject: `Missed your AIcelerate trial session? Let's reschedule it!`,
+    html: `
+        <p>Hi ${payload.first_name},</p>
+        <p>We noticed you couldn't make it to your AIcelerate free trial session — no worries, that happens!</p>
+        <p>We'd love to reschedule and help you activate your trial account, so you can see how our AI delivers guaranteed qualified meetings in action.</p>
+        <p>You can pick a new time here: <a href="${payload.rescheduleLink}">Schedule Your Session</a></p>
+        <p>Would one of these days work better for you?</p>
+        <p>Best regards,<br><strong>Alla</strong><br>AIcelerate Team</p>
+    `,
+  };
+}
+
 module.exports = {
   meetingBookedEmail,
   meetingReminder24hrEmail,
@@ -236,4 +313,9 @@ module.exports = {
   meetingNotBookedEmail,
   noBookingReminder1Email,
   noBookingReminder2Email,
+  reConnectReminder1Email,
+  reConnectReminder2Email,
+  googleSheetMeetingBookedReminder1,
+  googleSheetMeetingBookedReminder2,
+  googleSheetNoShowReminder,
 };

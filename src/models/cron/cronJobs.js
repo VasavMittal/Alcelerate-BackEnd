@@ -1,6 +1,6 @@
 // cron/cronJobs.js
 const cron = require("node-cron");
-const { runAutomationTasks } = require("../leadAutomationIndex");
+const { runAutomationTasks, runGoogleSheetsAutomationTask } = require("../leadAutomationIndex");
 require('dotenv').config();
 
 const url = process.env.GOOGLE_SHEET_URL;
@@ -12,6 +12,7 @@ function startCronJobs() {
   cron.schedule("*/3 * * * *", async () => {
     console.log("[CRON] Running scheduled lead automation task...");
     await runAutomationTasks();
+    await runGoogleSheetsAutomationTask();
   });
 
   console.log("✅ Cron job scheduled: Every 3 minute");
