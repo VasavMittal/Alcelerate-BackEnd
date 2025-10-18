@@ -199,12 +199,16 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
 
     // ========== PHASE 2: Reconnect SMS Message 1 ==========
     if (status === 'reconnect_SMS_message_1') {
+        const reconnectTime = new Date(row[5]);
+        const timeUntilMeeting =  now - reconnectTime;
+        const oneHour = 60 * 60 * 1000;
+        const twentyFiveHours = 25 * oneHour;
       if (calendarData) {
         console.log(`[GOOGLE-SHEET] ✅ PHASE 2: Email ${email} found in calendar - Status → meeting_booked`);
         row[2] = 'meeting_booked';
         row[4] = calendarData.meetingTime;
         row[5] = ''; // Clear reconnect time
-      } else {
+      } else if(timeUntilMeeting <= twentyFiveHours){
         console.log(`[GOOGLE-SHEET] ⏰ PHASE 2: Email ${email} NOT in calendar - Status → reconnect_SMS_message_2`);
         row[2] = 'reconnect_SMS_message_2';
         await sendTemplate.sendGoogleSheetReconnectReminder2(row);
