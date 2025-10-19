@@ -181,7 +181,7 @@ function getCurrentUTCTimestamp() {
 
 async function checkAndUpdateStatus(sheetData, emailMap) {
   const updatedRows = JSON.parse(JSON.stringify(sheetData)); // Deep copy
-  const now = new Date(); // Current time in UTC
+  const now = getCurrentUTCTimestamp(); // Current time in UTC
 
   for (let index = 1; index < updatedRows.length; index++) {
     const row = updatedRows[index];
