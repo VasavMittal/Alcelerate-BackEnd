@@ -264,7 +264,7 @@ function googleSheetMeetingBookedReminder1(payload) {
         <p>Dear ${payload.first_name},</p>
         <p>This is a friendly reminder that your AIcelerate free trial strategy session is scheduled for:</p>
         <p><strong>Date:</strong> ${payload.date}<br>
-        <strong>Time:</strong> ${payload.time}<br>
+        <strong>Time:</strong> ${payload.time} UTC<br>
         <strong>Meeting Link:</strong> <a href="${payload.meeting_url}">${payload.meeting_url}</a></p>
         <p>In this call, we'll walk you through how AIcelerate uses AI to find verified leads, automate outreach, and guarantee qualified meetings.</p>
         <p><strong>👉 During the session, we'll also activate your free trial and show you your first opportunities in real time.</strong></p>
@@ -281,7 +281,7 @@ function googleSheetMeetingBookedReminder2(payload) {
         <p>Dear ${payload.first_name},</p>
         <p>Your AIcelerate free trial session will begin in one hour.</p>
         <p><strong>Date:</strong> ${payload.date}<br>
-        <strong>Time:</strong> ${payload.time}<br>
+        <strong>Time:</strong> ${payload.time} UTC<br>
         <strong>Meeting Link:</strong> <a href="${payload.meeting_url}">${payload.meeting_url}</a></p>
         <p>In this call, we'll show you how AIcelerate automates outreach and delivers qualified meetings — and we'll activate your trial account so you can start seeing real results right away.</p>
         <p>See you soon!</p>
