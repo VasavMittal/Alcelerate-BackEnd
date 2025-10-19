@@ -281,7 +281,7 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
         const timeSinceNoShow = now - noShowTime;
         const twentyFourHours = 24 * 60 * 60 * 1000;
 
-        if (timeSinceNoShow >= twentyFourHours) {
+        if (timeSinceNoShow >= twentyFourHours && status === 'noshow') {
           console.log(`[GOOGLE-SHEET] 🚨 PHASE 5 (24hr): Email ${email} - Sending no-show reminder`);
           row[2] = 'no_show_final_reminder_sent';
           await sendTemplate.sendGoogleSheetNoShowReminder(row);
