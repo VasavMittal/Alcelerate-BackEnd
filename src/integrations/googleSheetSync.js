@@ -133,8 +133,18 @@ async function extractCalendarEmailsWithDetails() {
       attendees.forEach(attendee => {
         if (attendee.email) {
           const email = attendee.email.toLowerCase();
+
+          // Convert meeting time to UTC format
+          let meetingTimeUTC = null;
+          if (event.start?.dateTime) {
+            // Convert to UTC ISO string (YYYY-MM-DDTHH:mm:ss.sssZ)
+            const meetingDate = new Date(event.start.dateTime);
+            meetingTimeUTC = meetingDate.toISOString();
+            console.log(`[GOOGLE-SHEET] 🕐 Meeting Time Conversion: ${event.start.dateTime} → ${meetingTimeUTC}`);
+          }
+
           emailMap.set(email, {
-            meetingTime: event.start?.dateTime || null,
+            meetingTime: meetingTimeUTC,
             meetingLink: event.hangoutLink || event.conferenceData?.entryPoints?.[0]?.uri || '',
           });
         }
