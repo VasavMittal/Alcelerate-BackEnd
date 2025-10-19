@@ -271,7 +271,7 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
         row[2] = 'meeting_booked';
         row[4] = calendarData.meetingTime;
         row[6] = ''; // Clear no show time
-      } else if (!row[6]) {
+      } else if (!row[6] && status === 'noshow') {
         // First detection of no-show
         console.log(`[GOOGLE-SHEET] 🚨 PHASE 5 (Detection): Email ${email} - No Show Time set`);
         row[6] = getCurrentUTCTimestamp(); // UTC timestamp: YYYY-MM-DDTHH:mm:ss.sssZ
