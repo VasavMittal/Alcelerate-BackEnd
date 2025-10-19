@@ -264,7 +264,7 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
     }
 
     // ========== PHASE 5: No-Show Handling ==========
-    if (status === 'noshow') {
+    if (status === 'noshow' || status === 'no_show_final_reminder_sent') {
       // Check if email found in calendar (recovery)
       if (calendarData) {
         console.log(`[GOOGLE-SHEET] ✅ PHASE 5 (Recovery): Email ${email} found in calendar - Status → meeting_booked`);
