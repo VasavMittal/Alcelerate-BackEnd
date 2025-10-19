@@ -234,6 +234,7 @@ async function checkAndUpdateStatus(sheetData, emailMap) {
     if ((status === 'meeting_booked' || status === 'meeting_booked_reminder_24hour_message_sent') && row[4]) {
       const meetingTime = new Date(row[4]);
       const timeUntilMeeting = meetingTime - now;
+      console.log(`[GOOGLE-SHEET] 🕒 PHASE 4: Email ${email} - Time until meeting: ${timeUntilMeeting} ms`);
       const oneHour = 60 * 60 * 1000;
       const twentyFiveHours = 25 * oneHour;
 
